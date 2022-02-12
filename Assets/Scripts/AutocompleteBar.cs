@@ -13,6 +13,11 @@ public class AutocompleteBar : MonoBehaviour
     public bool hidden = true;
     private float hideTimer = 0f;
 
+    public string GetTopSuggestion()
+    {
+        return entries[0].Data;
+    }
+
     private void OnEnable()
     {
         hidden = true;

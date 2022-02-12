@@ -79,8 +79,7 @@ public sealed class Trie
                 // We're at the end of the key.... well, is this a word?
                 childTrie.CollectChildren(key, capacity, ref retVal);
 
-                // It may not be a word, but at least we have results.
-                return childTrie.IsWord;
+                return retVal.Count > 0;
             }
             return childTrie.GetPossibleResults(key, keyIndex + 1, capacity, ref retVal);
         }

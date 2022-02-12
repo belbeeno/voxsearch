@@ -8,6 +8,11 @@ public class AutocompleteEntry : MonoBehaviour
     public Text text;
     public Image bar;
 
+    public string Data
+    {
+        get { return gameObject.activeSelf ? text.text : string.Empty; }
+    }
+
     private void OnEnable()
     {
         text.text = string.Empty;

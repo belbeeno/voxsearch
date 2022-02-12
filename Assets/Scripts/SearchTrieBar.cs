@@ -1,36 +1,22 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using UnityEngine;
 
 public class SearchTrieBar : MonoBehaviour
 {
     public float searchCooldown = 1f;
     public TMPro.TMP_InputField textfield = null;
+    public UnityEngine.UI.Text placeholder = null;
     public AutocompleteBar autocomplete = null;
     public UnityEngine.UI.Image loading = null;
 
-    private Trie vocab = new Trie();
     private float timer = -1f;
     private string SearchQuery { get; set; } = string.Empty;
     private List<string> activeAutocompletes = new List<string>();
+    private string defaultPlaceholderText = string.Empty;
 
-    public void Start()
+    private void Start()
     {
-        TextAsset vox_db = Resources.Load<TextAsset>("vox_db");
-        int counter = 0;
-        using (StringReader sr = new StringReader(vox_db.text))
-        {
-            string word = sr.ReadLine();
-            while (word != null)
-            {
-                vocab.Add(word);
-                ++counter;
-                word = sr.ReadLine();
-            }
-        }
-        Debug.Log("Added " + counter + " entries to vocab, of size " + vocab.Count);
-        Resources.UnloadAsset(vox_db);
+        defaultPlaceholderText = placeholder.text;
     }
 
     private void Update()
@@ -51,8 +37,7 @@ public class SearchTrieBar : MonoBehaviour
             }
             else
             {
-                vocab.GetPossibleResults(SearchQuery, 10, ref activeAutocompletes);
-                if (activeAutocompletes.Count > 0)
+                if (VoxVocabulary.Get().PrefixTree.GetPossibleResults(SearchQuery, 10, ref activeAutocompletes))
                 {
                     autocomplete.Assign(activeAutocompletes);
                 }
@@ -64,18 +49,73 @@ public class SearchTrieBar : MonoBehaviour
         }
     }
 
+    private System.Text.StringBuilder _sb = new System.Text.StringBuilder();
     public void OnValueChanged(string content)
     {
-        if (string.IsNullOrEmpty(content) || content.EndsWith(' '))
+        if (string.IsNullOrEmpty(content))
         {
             // Ignore.
             SearchQuery = string.Empty;
             timer = searchCooldown;
             return;
         }
+        else if (content.EndsWith(' '))
+        {
+            string[] split_query = content.Split(' ');
+            _sb.Clear();
+            for (int i = 0; i < split_query.Length - 2; ++i)
+            {
+                _sb.Append(split_query[i] + " ");
+            }
+
+            string lastWord = split_query[split_query.Length - 2].ToLower();
+            if (!string.IsNullOrWhiteSpace(lastWord) && !VoxVocabulary.HasWord(lastWord))
+            {
+                string suggestion = autocomplete.GetTopSuggestion();
+                if (!string.IsNullOrEmpty(suggestion))
+                {
+                    Debug.Assert(suggestion.StartsWith(lastWord));
+                    _sb.Append(suggestion + " ");
+                }
+                // else, just drop it.  idk what it is lol
+
+                textfield.text = _sb.ToString();
+                textfield.MoveToEndOfLine(false, false);
+                SearchQuery = string.Empty;
+                timer = searchCooldown;
+                return;
+            }
+
+        }
 
         int firstChar = content.LastIndexOf(' ') + 1;
         SearchQuery = content.Substring(firstChar);
         timer = searchCooldown;
+    }
+
+    public void ValidateString(string content)
+    {
+        //Debug.Log("validating...");
+        string[] split_query = content.Split(' ');
+        _sb.Clear();
+        List<string> suggestions = new List<string>();
+        for (int i = 0; i < split_query.Length; ++i)
+        {
+            string currentWord = split_query[i];
+            if (VoxVocabulary.HasWord(currentWord))
+            {
+                _sb.Append(currentWord + " ");
+            }
+            else if (!string.IsNullOrWhiteSpace(currentWord))
+            {
+                // Alright, any suggestions?
+                if (VoxVocabulary.Get().PrefixTree.GetPossibleResults(currentWord, 1, ref suggestions))
+                {
+                    _sb.Append(suggestions[0] + " ");
+                }
+            }
+        }
+
+        textfield.text = _sb.ToString();
     }
 }
