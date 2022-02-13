@@ -6,8 +6,27 @@ using UnityEngine.Networking;
 
 public class QueryManager : MonoBehaviour
 {
-    public SearchResult testResult = null;
+    private static QueryManager _instance;
+    public static QueryManager Get()
+    {
+        if (_instance == null) _instance = FindObjectOfType<QueryManager>();
+        return _instance;
+    }
+
+    [Header("Query")]
+    public CanvasGroup queryGroup = null;
     public string QueryPath = "https://belbeeno.com/rooktools/voxquery.php";
+    public bool QueryComplete { get; private set; } = true;
+
+    [Header("Results")]
+    public SearchResult resultPrefab = null;
+    public CanvasGroup resultGroup = null;
+    public RectTransform resultHolder = null;
+
+    [Header("Pages")]
+    public int QueryPerPage = 50;
+    public int CurrentPage = 0;
+    public TMPro.TMP_Text PageDisplay = null;
 
     [System.Serializable]
     public struct QueryResult
@@ -32,34 +51,188 @@ public class QueryManager : MonoBehaviour
             return _sb.ToString();
         }
     }
+    public List<QueryResult.Vox> CurrentResults { get; private set; }  = new List<QueryResult.Vox>();
 
-    public void Start()
+    public void OnEnable()
     {
-        StartCoroutine(MakeQuery("belbeeno"));
+        _prevChildCount = -1;
+        resultPrefab.CreatePool();
+    }
+    public void OnDisable()
+    {
+        resultPrefab.RemovePool();
+    }
+    private int _prevChildCount = -1;
+    private bool _prevQueryComplete = true;
+    private int _prevCurrentResults = 0;
+    private void Update()
+    {
+        if (_prevChildCount == resultHolder.childCount && QueryComplete == _prevQueryComplete && _prevCurrentResults == CurrentResults.Count)
+        {
+            return;
+        }
+
+        if (CurrentResults.Count > 0)
+        {
+            queryGroup.blocksRaycasts = false;
+            queryGroup.interactable = false;
+            queryGroup.alpha = 0f;
+            resultGroup.blocksRaycasts = true;
+            resultGroup.interactable = QueryComplete;
+            resultGroup.alpha = 1f;
+        }
+        else
+        {
+            queryGroup.blocksRaycasts = true;
+            queryGroup.interactable = QueryComplete;
+            queryGroup.alpha = 1f;
+            resultGroup.blocksRaycasts= false;
+            resultGroup.interactable = false;
+            resultGroup.alpha = 0f;
+        }
+        PageDisplay.text = string.Format("{0} to {1} of {2}", CurrentPage * QueryPerPage, CurrentPage * QueryPerPage + resultHolder.childCount, CurrentResults.Count);
+        _prevChildCount = resultHolder.childCount;
+        _prevQueryComplete = QueryComplete;
+        _prevCurrentResults = CurrentResults.Count;
+    }
+
+    public enum Option
+    {
+        May = 0,
+        Must,
+        Not,
+    }
+
+    public void MakeQuery(string author, string andQuery, string orQuery, string notQuery, Option isSong, Option isMorshu)
+    {
+        if (!QueryComplete)
+        {
+            Debug.LogError("Attempting to make multiple queries at once!  That's not allowed.");
+        }
+        else
+        {
+            QueryComplete = false;
+            StartCoroutine(MakeQueryCoroutine(author, andQuery, orQuery, notQuery, isSong, isMorshu));
+        }
     }
 
     private StringBuilder sb = new StringBuilder();
-    public IEnumerator MakeQuery(string author)
+    private IEnumerator MakeQueryCoroutine(string author, string andQuery, string orQuery, string notQuery, Option isSong, Option isMorshu)
     {
+        if (string.IsNullOrWhiteSpace(author)
+            && string.IsNullOrWhiteSpace(andQuery)
+            && string.IsNullOrWhiteSpace(orQuery)
+            && string.IsNullOrWhiteSpace(notQuery)
+            && isSong == Option.May
+            && isMorshu == Option.May)
+        {
+            // Nothing to do, exit out.
+            QueryComplete = true;
+            yield break;
+        }
+
         sb.Clear();
         sb.Append(QueryPath);
-        sb.AppendFormat("?author={0}", author);
+        char prefix = '?';
+        void addStrParameter(string name, string value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                sb.AppendFormat("{0}{1}={2}", prefix, name, value.Replace(' ', '_'));
+                prefix = '&';
+            }
+        }
+        void addOptionParameter(string name, Option value)
+        {
+            if (value != Option.May)
+            {
+                sb.AppendFormat("{0}{1}={2}", prefix, name, (value == Option.Must).ToString().ToLower());
+                prefix = '&';
+            }
+        }
+        addStrParameter("author", author);
+        addStrParameter("qa", andQuery);
+        addStrParameter("qo", orQuery);
+        addStrParameter("qn", notQuery);
+        addOptionParameter("s", isSong);
+        addOptionParameter("m", isMorshu);
+
         string query = sb.ToString();
+        Debug.Log("Query: " + query, gameObject);
 
         using (UnityWebRequest req = UnityWebRequest.Get(query))
         {
             yield return req.SendWebRequest();
 
-            if (req.result == UnityWebRequest.Result.Success)
+            if (req.result != UnityWebRequest.Result.Success)
             {
-                //JsonUtility.FromJson<>(req.downloadHandler.text);
-                QueryResult result = JsonUtility.FromJson<QueryResult>(req.downloadHandler.text);
-                testResult.FillWithContent(result.content[0].author, result.content[0].log_id, result.content[0].content);
+                Debug.LogError(string.Format("Could not access server.  Reason: [{0} Error code: {1}] - {2}", req.result.ToString() ,req.responseCode.ToString(), req.error));
+                QueryComplete = true;
+                yield break;
             }
-            else
-            {
-                Debug.LogError("Could not access server.  Reason: " + req.result.ToString() + ", Error code: " + req.responseCode.ToString());
-            }
+
+            QueryResult result = JsonUtility.FromJson<QueryResult>(req.downloadHandler.text);
+            CurrentResults.AddRange(result.content);
+            yield return StartCoroutine(BuildEntries(0));
         }
+    }
+
+    private void AddSearchEntry(int index)
+    {
+        QueryResult.Vox currentResult = CurrentResults[index];
+        SearchResult newResult = resultPrefab.Spawn(resultHolder);
+        newResult.FillWithContent(int.Parse(CurrentResults[index].id), CurrentResults[index].author, CurrentResults[index].log_id, CurrentResults[index].content);
+    }
+
+    private void DropAllEntries()
+    {
+        while (resultHolder.childCount > 0)
+        {
+            SearchResult toRecycle = resultHolder.GetChild(resultHolder.childCount - 1).GetComponent<SearchResult>();
+            toRecycle.Recycle();
+        }
+    }
+
+    private IEnumerator BuildEntries(int page)
+    {
+        QueryComplete = false;
+        CurrentPage = page;
+        int startIndex = CurrentPage * QueryPerPage;
+        int endIndex = Mathf.Min((CurrentPage + 1) * QueryPerPage, CurrentResults.Count);
+        for (int currentResultIndex = startIndex; currentResultIndex < endIndex; ++currentResultIndex)
+        {
+            AddSearchEntry(currentResultIndex);
+            yield return 0;
+        }
+        QueryComplete = true;
+    }
+
+    public void DropResult(SearchResult toDrop)
+    {
+        if (!QueryComplete) return;
+        int idx = toDrop.transform.GetSiblingIndex();
+        CurrentResults.RemoveAt(idx);
+        toDrop.Recycle();
+
+        if (QueryPerPage * (CurrentPage + 1) < CurrentResults.Count)
+        {
+            AddSearchEntry(QueryPerPage * (CurrentPage + 1) - 1);
+        }
+    }
+
+    public void PageUp()
+    {
+        if ((CurrentPage + 1) * QueryPerPage >= CurrentResults.Count) return;
+        if (!QueryComplete) return;
+        DropAllEntries();
+        StartCoroutine(BuildEntries(CurrentPage + 1));
+    }
+
+    public void PageDown()
+    {
+        if (CurrentPage == 0) return;
+        if (!QueryComplete) return;
+        DropAllEntries();
+        StartCoroutine(BuildEntries(CurrentPage - 1));
     }
 }
