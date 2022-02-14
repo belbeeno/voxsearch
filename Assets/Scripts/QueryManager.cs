@@ -107,7 +107,8 @@ public class QueryManager : MonoBehaviour
     {
         if (!QueryComplete)
         {
-            Debug.LogError("Attempting to make multiple queries at once!  That's not allowed.");
+            //Debug.LogError("Attempting to make multiple queries at once!  That's not allowed.");
+            GlobalOverlay.AppendMessage("Multiple Queries not allowed!");
         }
         else
         {
@@ -127,6 +128,7 @@ public class QueryManager : MonoBehaviour
             && isMorshu == Option.May)
         {
             // Nothing to do, exit out.
+            GlobalOverlay.AppendMessage("Empty query not allowed!");
             QueryComplete = true;
             yield break;
         }
@@ -166,13 +168,20 @@ public class QueryManager : MonoBehaviour
 
             if (req.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError(string.Format("Could not access server.  Reason: [{0} Error code: {1}] - {2}", req.result.ToString() ,req.responseCode.ToString(), req.error));
+                string error = string.Format("Could not access server.  Reason: [{0} Error code: {1}]", req.result.ToString(), req.responseCode.ToString());
+                GlobalOverlay.AppendMessage(error);
                 QueryComplete = true;
                 yield break;
             }
 
             QueryResult result = JsonUtility.FromJson<QueryResult>(req.downloadHandler.text);
             CurrentResults.AddRange(result.content);
+
+            if (CurrentResults.Count == 0)
+            {
+                GlobalOverlay.AppendMessage("0 entries found.");
+                yield return 0;
+            }
             yield return StartCoroutine(BuildEntries(0));
         }
     }

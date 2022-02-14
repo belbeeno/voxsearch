@@ -1841,7 +1841,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 880510e4aa64dbb4b83070bfe93dcf24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rootPath: https://rook.zone/vox_logs/
+  rootPath: https://rook.zone/voxlogs/
   logEntry: {fileID: 342798215161517339}
   button: {fileID: 9135455788387692613}
 --- !u!224 &9000906265827319094 stripped
