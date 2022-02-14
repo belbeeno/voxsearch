@@ -1794,6 +1794,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2664783856588615097}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: FollowPath
+      objectReference: {fileID: 0}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: FollowLinkButton, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8033750648017101786, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c17c55c080ba69644b2d46d845f06db8, type: 3}
 --- !u!1 &957544427374770888 stripped

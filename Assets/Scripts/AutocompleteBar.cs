@@ -5,13 +5,13 @@ using UnityEngine;
 public class AutocompleteBar : MonoBehaviour
 {
     public RectTransform myRect;
-    public Vector2 anchoredStart = new Vector2(0f, 0f);
-    public Vector2 anchoredEnd = new Vector2(0f, 1f);
     public AnimationCurve hideCurve;
     public AutocompleteEntry[] entries = new AutocompleteEntry[10];
 
     public bool hidden = true;
     private float hideTimer = 0f;
+    private Vector2 anchoredStart = new Vector2(0f, 0f);
+    private Vector2 anchoredEnd = new Vector2(0f, 0f);
 
     public string GetTopSuggestion()
     {
@@ -74,6 +74,7 @@ public class AutocompleteBar : MonoBehaviour
             hideTimer = Mathf.Min(hideTimer + Time.deltaTime, end);
         }
 
+        anchoredEnd.y = myRect.rect.height;
         myRect.anchoredPosition = Vector2.LerpUnclamped(anchoredStart, anchoredEnd, hideCurve.Evaluate(hideTimer));
     }
 

@@ -184,6 +184,13 @@ public class QueryManager : MonoBehaviour
         newResult.FillWithContent(int.Parse(CurrentResults[index].id), CurrentResults[index].author, CurrentResults[index].log_id, CurrentResults[index].content);
     }
 
+    public void ClearEntries()
+    {
+        CurrentResults.Clear();
+        DropAllEntries();
+
+    }
+
     private void DropAllEntries()
     {
         while (resultHolder.childCount > 0)
