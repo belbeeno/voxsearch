@@ -1058,7 +1058,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26.75
+  m_fontSize: 18
   m_fontSizeBase: 14
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1413,6 +1413,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textfield: {fileID: 1030634999}
   anim: {fileID: 925012805}
+  greetings:
+  - Greetis...
+  - Luppy!
+  - Luppy luppy!
+  - Gamer's greetings to you!
+  - Hi!
+  - Hi hi!
+  - Heyo!
+  - Hello!
+  - Howdy!
+  - Helo!
+  - Rally-huh...??
+  - Bengal Hello
 --- !u!111 &925012805
 Animation:
   m_ObjectHideFlags: 0
@@ -1688,7 +1701,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Greetis...
+  m_Text: 
 --- !u!222 &1030635000
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2887,7 +2900,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28.15
+  m_fontSize: 19.65
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3556,6 +3569,7 @@ GameObject:
   - component: {fileID: 2045127997}
   - component: {fileID: 2045127996}
   - component: {fileID: 2045127995}
+  - component: {fileID: 2045127998}
   m_Layer: 5
   m_Name: Input
   m_TagString: Untagged
@@ -3720,6 +3734,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2045127993}
   m_CullTransparentMesh: 1
+--- !u!114 &2045127998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045127993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc33a39070010f94fb1c2dd721c1286d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showHtmlElement: 0
 --- !u!1 &2080709176
 GameObject:
   m_ObjectHideFlags: 0
