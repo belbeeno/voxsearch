@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class FollowLinkButton : MonoBehaviour
 {
     public string rootPath = "https://rook.zone/voxlogs/";
-    public Text logEntry = null;
+    public TMPro.TMP_InputField logEntry = null;
     public Button button = null;
 
     public void FollowPath()
@@ -12,8 +12,8 @@ public class FollowLinkButton : MonoBehaviour
         Application.OpenURL(rootPath + logEntry.text);
     }
 
-    private void Update()
+    public void OnTextChanged(string text)
     {
-        button.interactable = (logEntry != null && !string.IsNullOrWhiteSpace(logEntry.text));
+        button.interactable = (logEntry != null && text.Contains("-voxLog.txt"));
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Events;
 
 public class QueryManager : MonoBehaviour
 {
@@ -27,6 +28,21 @@ public class QueryManager : MonoBehaviour
     public int QueryPerPage = 50;
     public int CurrentPage = 0;
     public TMPro.TMP_Text PageDisplay = null;
+
+    private string _latestVox = string.Empty;
+    public UnityEvent<string> OnLatestVoxAssigned;
+    public string LatestVox
+    {
+        get => _latestVox;
+        private set
+        {
+            _latestVox = value;
+            if (OnLatestVoxAssigned != null)
+            {
+                OnLatestVoxAssigned.Invoke(value);
+            }
+        }
+    }
 
     [System.Serializable]
     public struct QueryResult
@@ -184,6 +200,32 @@ public class QueryManager : MonoBehaviour
             }
             yield return StartCoroutine(BuildEntries(0));
         }
+    }
+
+    public void RequestLatest()
+    {
+        QueryComplete = false;
+        StartCoroutine(RequestLatestCoroutine());
+    }
+
+    private IEnumerator RequestLatestCoroutine()
+    {
+        string query = QueryPath + "?latest=1";
+        using (UnityWebRequest req = UnityWebRequest.Get(query))
+        {
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                string error = string.Format("Could not access the server.  Reason: [{0} ErrorCode: {1}]", req.result.ToString(), req.responseCode.ToString());
+                GlobalOverlay.AppendMessage(error);
+                QueryComplete = true;
+            }
+
+            LatestVox = req.downloadHandler.text;
+        }
+
+        QueryComplete = true;
     }
 
     private void AddSearchEntry(int index)

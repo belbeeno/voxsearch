@@ -5,7 +5,7 @@ public class SearchResult : PooledMonoBehaviour
 {
     public int id = -1;
     public Text authorTextBox = null;
-    public Text linkTextBox = null;
+    public TMPro.TMP_InputField linkTextBox = null;
     public TMPro.TMP_InputField contentTextBox = null;
 
     public override void OnSpawn()
