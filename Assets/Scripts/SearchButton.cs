@@ -9,6 +9,7 @@ public class SearchButton : MonoBehaviour
     public TMPro.TMP_InputField notField = null;
     public TMPro.TMP_Dropdown hasSong = null;
     public TMPro.TMP_Dropdown hasMorshu = null;
+    public TMPro.TMP_Dropdown hasGrant = null;
 
     public QueryManager manager = null;
 
@@ -35,7 +36,8 @@ public class SearchButton : MonoBehaviour
         string not = notField.text.Trim();
         QueryManager.Option song = IndexToOption(hasSong.value);
         QueryManager.Option morshu = IndexToOption(hasMorshu.value);
+        QueryManager.Option grant = IndexToOption(hasGrant.value);
 
-        manager.MakeQuery(author, and, or, not, song, morshu);
+        manager.MakeQuery(author, and, or, not, song, morshu, grant);
     }
 }

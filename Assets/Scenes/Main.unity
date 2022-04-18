@@ -339,6 +339,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 186633385}
   m_CullTransparentMesh: 1
+--- !u!114 &210118549 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5316501720404316645, guid: dfa5b2ca820323c4fb8ecca76f9d0996, type: 3}
+  m_PrefabInstance: {fileID: 354129875}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b743370ac3e4ec2a1668f5455a8ef8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &252501448
 GameObject:
   m_ObjectHideFlags: 0
@@ -2440,23 +2451,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1241830409}
   m_CullTransparentMesh: 1
---- !u!1 &1296197289 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5316501721724815282, guid: dfa5b2ca820323c4fb8ecca76f9d0996, type: 3}
-  m_PrefabInstance: {fileID: 354129875}
-  m_PrefabAsset: {fileID: 0}
---- !u!225 &1296197290
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1296197289}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
 --- !u!1 &1298201618
 GameObject:
   m_ObjectHideFlags: 0
@@ -4782,6 +4776,7 @@ MonoBehaviour:
   notField: {fileID: 721254410}
   hasSong: {fileID: 1566466490}
   hasMorshu: {fileID: 1764198581}
+  hasGrant: {fileID: 210118549}
   manager: {fileID: 519420033}
 --- !u!1001 &5316501721557348447
 PrefabInstance:

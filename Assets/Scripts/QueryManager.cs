@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -119,7 +120,71 @@ public class QueryManager : MonoBehaviour
         Not,
     }
 
-    public void MakeQuery(string author, string andQuery, string orQuery, string notQuery, Option isSong, Option isMorshu)
+    private Regex paddingRegex = new Regex(@"((?<= )|^)([a-zA-Z0-9_']{1,2})(?=($|[\r\n\s ]))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private string PadShortQueries(string query) => paddingRegex.Replace(query, (Match match) => match.Result("$2").PadRight(3, '_'));
+
+    // Should probably find a way to embed this in the dictionary.
+    private readonly List<KeyValuePair<string, string>> shorthandLookup = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>(@"\bn1\b", "cnote" ),
+        new KeyValuePair<string, string>(@"\bn2\b", "catnote" ),
+        new KeyValuePair<string, string>(@"\bn3\b", "cuicanote" ),
+        new KeyValuePair<string, string>(@"\bn4\b", "dootnote" ),
+        new KeyValuePair<string, string>(@"\bn5\b", "yossynote" ),
+        new KeyValuePair<string, string>(@"\bn6\b", "puhnote" ),
+        new KeyValuePair<string, string>(@"\bn7\b", "bupnote" ),
+        new KeyValuePair<string, string>(@"\bn8\b", "dantnote" ),
+        new KeyValuePair<string, string>(@"\bn9\b", "downote" ),
+        new KeyValuePair<string, string>(@"\bn10\b", "slapnote" ),
+        new KeyValuePair<string, string>(@"\bn11\b", "jarnote" ),
+        new KeyValuePair<string, string>(@"\bn12\b", "orchnote" ),
+        new KeyValuePair<string, string>(@"\bn13\b", "shynote" ),
+        new KeyValuePair<string, string>(@"\bn14\b", "morshunote" ),
+        new KeyValuePair<string, string>(@"\bn15\b", "hazymazenote" ),
+        new KeyValuePair<string, string>(@"\bn16\b", "hauntnote" ),
+        new KeyValuePair<string, string>(@"\bn17\b", "pizzicatonote" ),
+        new KeyValuePair<string, string>(@"\bn18\b", "zunnote" ),
+        new KeyValuePair<string, string>(@"\bn19\b", "banjonote" ),
+        new KeyValuePair<string, string>(@"\bn20\b", "banjonote2" ),
+        new KeyValuePair<string, string>(@"\bn21\b", "banjonote3" ),
+        new KeyValuePair<string, string>(@"\bn22\b", "diddynote" ),
+        new KeyValuePair<string, string>(@"\bn23\b", "diddynote2" ),
+        new KeyValuePair<string, string>(@"\bn24\b", "diddynote3" ),
+        new KeyValuePair<string, string>(@"\bkk1\b", "kk_na" ),
+        new KeyValuePair<string, string>(@"\bkk2\b", "kk_mi" ),
+        new KeyValuePair<string, string>(@"\bkk3\b", "kk_me" ),
+        new KeyValuePair<string, string>(@"\bkk4\b", "kk_o" ),
+        new KeyValuePair<string, string>(@"\bkk5\b", "kk_oh" ),
+        new KeyValuePair<string, string>(@"\bkk6\b", "kk_way" ),
+        new KeyValuePair<string, string>(@"\bkk7\b", "kk_now" ),
+        new KeyValuePair<string, string>(@"\bkk8\b", "kk_whistle" ),
+        new KeyValuePair<string, string>(@"\bkk9\b", "kk_howl" ),
+        new KeyValuePair<string, string>(@"\bkk10\b", "kk_hm" ),
+        new KeyValuePair<string, string>(@"\bkk11\b", "kk_hmlow" ),
+        new KeyValuePair<string, string>(@"\bkk12\b", "kk_snare" ),
+        new KeyValuePair<string, string>(@"\bkk13\b", "kk_snare2" ),
+        new KeyValuePair<string, string>(@"\bkk14\b", "kk_hat" ),
+        new KeyValuePair<string, string>(@"\bd1\b", "sonic_snare" ),
+        new KeyValuePair<string, string>(@"\bd2\b", "sonic_kick" ),
+        new KeyValuePair<string, string>(@"\bd3\b", "sonic_go" ),
+        new KeyValuePair<string, string>(@"\bd4\b", "hazymazedrum" ),
+        new KeyValuePair<string, string>(@"\bd5\b", "hazymazewood" ),
+        new KeyValuePair<string, string>(@"\bd6\b", "yosbongonote" ),
+        new KeyValuePair<string, string>(@"\brn\b", "restnote" ),
+    };
+
+    private string PreprocessQuery(string query)
+    {
+        string retVal = query;
+        foreach (KeyValuePair<string, string> pair in shorthandLookup) {
+            Regex shorthandRx = new Regex(pair.Key);
+            retVal = shorthandRx.Replace(retVal, pair.Value);
+        }
+
+        return PadShortQueries(retVal);
+    }
+
+    public void MakeQuery(string author, string andQuery, string orQuery, string notQuery, Option isSong, Option isMorshu, Option isGrant)
     {
         if (!QueryComplete)
         {
@@ -129,12 +194,12 @@ public class QueryManager : MonoBehaviour
         else
         {
             QueryComplete = false;
-            StartCoroutine(MakeQueryCoroutine(author, andQuery, orQuery, notQuery, isSong, isMorshu));
+            StartCoroutine(MakeQueryCoroutine(author, PreprocessQuery(andQuery), PreprocessQuery(orQuery), PreprocessQuery(notQuery), isSong, isMorshu, isGrant));
         }
     }
 
     private StringBuilder sb = new StringBuilder();
-    private IEnumerator MakeQueryCoroutine(string author, string andQuery, string orQuery, string notQuery, Option isSong, Option isMorshu)
+    private IEnumerator MakeQueryCoroutine(string author, string andQuery, string orQuery, string notQuery, Option isSong, Option isMorshu, Option isGrant)
     {
         if (string.IsNullOrWhiteSpace(author)
             && string.IsNullOrWhiteSpace(andQuery)
@@ -156,7 +221,7 @@ public class QueryManager : MonoBehaviour
         {
             if (!string.IsNullOrWhiteSpace(value))
             {
-                sb.AppendFormat("{0}{1}={2}", prefix, name, value.Replace(' ', '_'));
+                sb.AppendFormat("{0}{1}={2}", prefix, name, value.Replace(' ', ';'));
                 prefix = '&';
             }
         }
@@ -174,6 +239,7 @@ public class QueryManager : MonoBehaviour
         addStrParameter("qn", notQuery);
         addOptionParameter("s", isSong);
         addOptionParameter("m", isMorshu);
+        addOptionParameter("g", isGrant);
 
         string query = sb.ToString();
         Debug.Log("Query: " + query, gameObject);
